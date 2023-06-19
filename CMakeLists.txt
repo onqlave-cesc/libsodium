@@ -1,81 +1,62 @@
-cmake_minimum_required(VERSION 3.5.0)
-project(libsodium VERSION 1.0.32 LANGUAGES C CXX ASM)
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-INCLUDE(CheckCCompilerFlag)
+# ---- Project ----
 
-#----------------------------------------------------------
-######################### OPTIONS #########################
-#----------------------------------------------------------
-
-OPTION(LIBSODIUM_BUILD_SHARED_LIBRARIES "Build the library dynamically (ON/TRUE) or statically (OFF/FALSE).")
-OPTION(ENABLE_BLOCKING_RANDOM           "Enable this switch only if /dev/urandom is totally broken on the target platform.")
-OPTION(ENABLE_MINIMAL_BUILD             "Only compile the minimum set of functions required for the high-level API.")
-OPTION(ENABLE_TESTS                     "Enable testing.")
-OPTION(DISABLE_ASM                      "Disable AMD64 assembly implementations.")
-OPTION(DISABLE_PIE                      "Do not produce position independent executables.")
-OPTION(DISABLE_SSP                      "Do not compile with -fstack-protector.")
-
-#----------------------------------------------------------
-######################### VERSION #########################
-#----------------------------------------------------------
-
-SET(VERSION 1.0.18)
-SET(SODIUM_LIBRARY_VERSION_MAJOR 1)
-SET(SODIUM_LIBRARY_VERSION_MINOR 0)
-SET(DLL_VERSION 6)
-
-SET(SODIUM_LIBRARY_VERSION "1:0:18")
-#                            | | |
-#                     +------+ | +---+
-#                     |        |     |
-#                  current:revision:age
-#                     |        |     |
-#                     |        |     +- increment if interfaces have been added
-#                     |        |        set to zero if interfaces have been removed
-#                     |        |        or changed
-#                     |        +- increment if source code has changed
-#                     |           set to zero if current is incremented
-#                     +- increment if interfaces have been added, removed or changed
-
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include/sodium/version.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include/sodium/version.h)
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include/sodium/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/src/libsodium/include/sodium/version.h)
-
-
-#----------------------------------------------------------
-##################### SOURCE / HEADERS ####################
-#----------------------------------------------------------
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include/sodium)
-#For version.h.in to version.h
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/src/libsodium/include/sodium)
-
-file(GLOB_RECURSE libsodium_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/*.h)
-
-file(GLOB_RECURSE libsodium_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/*.c)
-
-#----------------------------------------------------------
-######################### LIBRARY #########################
-#----------------------------------------------------------
-
-#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/build")
-
-
-IF(ENABLE_BLOCKING_RANDOM)
-    ADD_DEFINITIONS("-DUSE_BLOCKING_RANDOM")
-ENDIF(ENABLE_BLOCKING_RANDOM)
-
-IF(LIBSODIUM_BUILD_SHARED_LIBRARIES)
-    ADD_LIBRARY(libsodium SHARED ${libsodium_HEADERS} ${libsodium_SOURCE})
-ELSE(LIBSODIUM_BUILD_SHARED_LIBRARIES)
-    ADD_DEFINITIONS("-DSODIUM_STATIC")
-    ADD_LIBRARY(libsodium STATIC ${libsodium_HEADERS} ${libsodium_SOURCE})
-ENDIF(LIBSODIUM_BUILD_SHARED_LIBRARIES)
-
-SET_TARGET_PROPERTIES(libsodium PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
-        ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
-        PROJECT_LABEL "libsodium"
+# Note: update this to your new project's name and version
+project(libsodium
+#        VERSION 1.0.18
+        LANGUAGES CXX
         )
+
+# ---- Include guards ----
+
+if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+    message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there.")
+endif()
+
+# ---- Add dependencies via CPM ----
+# see https://github.com/TheLartians/CPM.cmake for more info
+
+include(cmake/CPM.cmake)
+
+# PackageProject.cmake will be used to make our target installable
+CPMAddPackage(
+        NAME PackageProject.cmake
+        GITHUB_REPOSITORY TheLartians/PackageProject.cmake
+        VERSION 1.0
+)
+
+# ---- Add source files ----
+
+# Note: globbing sources is considered bad practice as CMake's generators may not detect new files automatically.
+# Keep that in mind when changing files, or explicitly mention them here.
+FILE(GLOB_RECURSE headers CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include/*.h")
+
+# ---- Create library ----
+
+# Note: for header-only libraries change all PUBLIC flags to INTERFACE and create an interface target:
+add_library(${PROJECT_NAME} INTERFACE ${headers})
+set_target_properties(${PROJECT_NAME} PROPERTIES INTERFACE_COMPILE_FEATURES cxx_std_11)
+
+# beeing a cross-platform target, we enforce enforce standards conformance on MSVC
+target_compile_options(${PROJECT_NAME} INTERFACE "$<$<BOOL:${MSVC}>:/permissive->")
+
+# Link dependencies (if required)
+# target_link_libraries(Greeter PUBLIC cxxopts)
+
+target_include_directories(${PROJECT_NAME}
+        INTERFACE
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>
+        )
+
+# ---- Create an installable target ----
+# this allows users to install and find the library via `find_package()`.
+
+packageProject(
+        NAME ${PROJECT_NAME}
+        VERSION ${PROJECT_VERSION}
+        BINARY_DIR ${PROJECT_BINARY_DIR}
+        INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
+        INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
+)
