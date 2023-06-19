@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 # Note: update this to your new project's name and version
 project(libsodium
-#        VERSION 1.0.18
+        VERSION 1.0.18
         LANGUAGES CXX
         )
 
@@ -17,8 +17,7 @@ endif()
 # ---- Add dependencies via CPM ----
 # see https://github.com/TheLartians/CPM.cmake for more info
 
-include(cmake/CPM.cmake)
-
+include("${CMAKE_CURRENT_SOURCE_DIR}/modules/CPM.cmake")
 # PackageProject.cmake will be used to make our target installable
 CPMAddPackage(
         NAME PackageProject.cmake
