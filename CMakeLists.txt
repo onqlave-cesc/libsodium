@@ -27,10 +27,12 @@ CPMAddPackage(
 )
 
 # ---- Add source files ----
+configure_file(${libsodium_SOURCE_DIR}/src/libsodium/include/sodium/version.h.in ${libsodium_SOURCE_DIR}/src/libsodium/include/sodium/version.h)
+
 FILE(GLOB_RECURSE headers CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include/*.h")
 FILE(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/*.c")
 
-configure_file(${libsodium_SOURCE_DIR}/src/libsodium/include/sodium/version.h.in ${libsodium_SOURCE_DIR}/src/libsodium/include/sodium/version.h)
+
 # ---- Create library ----
 add_library(libsodium SHARED ${headers} ${sources})
 set_target_properties(libsodium PROPERTIES LINKER_LANGUAGE CXX)
@@ -38,10 +40,17 @@ set_target_properties(libsodium PROPERTIES LINKER_LANGUAGE CXX)
 # being a cross-platform target, we enforce standards conformance on MSVC
 target_compile_options(libsodium PUBLIC "$<$<BOOL:${MSVC}>:/permissive->")
 
-target_include_directories(libsodium
+#target_include_directories(libsodium
+#        PUBLIC
+#        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/libsodium/include>
+#        $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>
+#        )
+
+target_include_directories(${PROJECT_NAME}
         PUBLIC
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/libsodium/include>
-        $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>
+        src/libsodium/include
+        PRIVATE
+        src/libsodium/include/sodium
         )
 
 # ---- Create an installable target ----
