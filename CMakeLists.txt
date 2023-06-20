@@ -32,7 +32,7 @@ FILE(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/lib
 
 configure_file(${libsodium_SOURCE_DIR}/src/libsodium/include/sodium/version.h.in ${libsodium_SOURCE_DIR}/src/libsodium/include/sodium/version.h)
 # ---- Create library ----
-add_library(libsodium ${headers} ${sources})
+add_library(libsodium SHARED ${headers} ${sources})
 set_target_properties(libsodium PROPERTIES LINKER_LANGUAGE CXX)
 
 # being a cross-platform target, we enforce standards conformance on MSVC
