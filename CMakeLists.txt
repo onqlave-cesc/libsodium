@@ -36,7 +36,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include/
 
 # ---- CPM.cmake configuration ----
 
-include(cmake/CPM.cmake)
+include(modules/CPM.cmake)
 
 CPMAddPackage(
         NAME PackageProject.cmake
