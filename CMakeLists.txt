@@ -1,53 +1,56 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
+# ---- Project ----
+
+# Note: update this to your new project's name and version
 project(libsodium
         VERSION 1.0.18
-        LANGUAGES C
+        LANGUAGES CXX
         )
 
-# ---- Add sources ----
+# ---- Include guards ----
 
-file(GLOB_RECURSE LIBSODIUM_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
-
-# ---- Create library ----
-
-add_library(libsodium ${LIBSODIUM_SOURCES})
-target_include_directories(libsodium PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include)
-
-# ---- Set compiler flags ----
-
-if (MSVC)
-    target_compile_options(libsodium PRIVATE /W4 /WX)
-else()
-    target_compile_options(libsodium PRIVATE -Wall -Wextra -pedantic -Werror)
+if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+    message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there.")
 endif()
 
-# ---- Install ----
-
-install(TARGETS libsodium
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
-        RUNTIME DESTINATION bin
-        )
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include/
-        DESTINATION include/libsodium
-        FILES_MATCHING PATTERN "*.h"
-        )
-
-# ---- CPM.cmake configuration ----
+# ---- Add dependencies via CPM ----
+# see https://github.com/TheLartians/CPM.cmake for more info
 
 include(modules/CPM.cmake)
 
+# PackageProject.cmake will be used to make our target installable
 CPMAddPackage(
         NAME PackageProject.cmake
         GITHUB_REPOSITORY TheLartians/PackageProject.cmake
-        VERSION 1.0
+        VERSION 1.2
 )
 
+# ---- Add source files ----
+FILE(GLOB_RECURSE headers CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include/*.h")
+FILE(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/*.c")
+
+# ---- Create library ----
+add_library(libsodium ${headers} ${sources})
+set_target_properties(libsodium PROPERTIES LINKER_LANGUAGE CXX)
+
+# beeing a cross-platform target, we enforce standards conformance on MSVC
+target_compile_options(libsodium PUBLIC "$<$<BOOL:${MSVC}>:/permissive->")
+
+target_include_directories(libsodium
+        PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>
+        )
+
+# ---- Create an installable target ----
+# this allows users to install and find the library via `find_package()`.
+
 packageProject(
-        NAME libsodium
+        NAME ${PROJECT_NAME}
         VERSION ${PROJECT_VERSION}
         BINARY_DIR ${PROJECT_BINARY_DIR}
-        INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include
-        INCLUDE_DESTINATION include/libsodium
+        INCLUDE_DIR ${PROJECT_SOURCE_DIR}src/libsodium/include
+        INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
+        DEPENDENCIES ""
 )
