@@ -40,17 +40,10 @@ set_target_properties(libsodium PROPERTIES LINKER_LANGUAGE CXX)
 # being a cross-platform target, we enforce standards conformance on MSVC
 target_compile_options(libsodium PUBLIC "$<$<BOOL:${MSVC}>:/permissive->")
 
-#target_include_directories(libsodium
-#        PUBLIC
-#        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/libsodium/include>
-#        $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>
-#        )
-
-target_include_directories(${PROJECT_NAME}
+target_include_directories(libsodium
         PUBLIC
-        src/libsodium/include
-        PRIVATE
-        src/libsodium/include/sodium
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/libsodium/include>
+        $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>
         )
 
 # ---- Create an installable target ----
@@ -60,7 +53,7 @@ packageProject(
         NAME ${PROJECT_NAME}
         VERSION ${PROJECT_VERSION}
         BINARY_DIR ${PROJECT_BINARY_DIR}
-        INCLUDE_DIR ${PROJECT_SOURCE_DIR}src/libsodium/include
+        INCLUDE_DIR ${PROJECT_SOURCE_DIR}/src/libsodium/include
         INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
         DEPENDENCIES ""
 )
