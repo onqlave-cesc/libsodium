@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 # Note: update this to your new project's name and version
 project(libsodium
         VERSION 1.0.18
-        LANGUAGES CXX
+        LANGUAGES CXX C
         )
 
 # ---- Include guards ----
