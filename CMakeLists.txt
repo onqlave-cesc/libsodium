@@ -27,7 +27,7 @@ CPMAddPackage(
 )
 
 # ---- Add source files ----
-configure_file(${libsodium_SOURCE_DIR}/src/libsodium/include/sodium/version.h.in ${libsodium_SOURCE_DIR}/src/libsodium/include/sodium/version.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include/sodium/version.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include/sodium/version.h)
 
 FILE(GLOB_RECURSE headers CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include/*.h")
 FILE(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/*.c")
