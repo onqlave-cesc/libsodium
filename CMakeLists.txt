@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 # ---- Project ----
 
 # Note: update this to your new project's name and version
-project(libsodium
+project(sodium
         VERSION 1.0.18
         LANGUAGES CXX C
         )
@@ -34,13 +34,13 @@ FILE(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/lib
 
 
 # ---- Create library ----
-add_library(libsodium SHARED ${headers} ${sources})
-set_target_properties(libsodium PROPERTIES LINKER_LANGUAGE CXX)
+add_library(${PROJECT_NAME} SHARED ${headers})
+set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 
 # being a cross-platform target, we enforce standards conformance on MSVC
-target_compile_options(libsodium PUBLIC "$<$<BOOL:${MSVC}>:/permissive->")
+target_compile_options(${PROJECT_NAME} PUBLIC "$<$<BOOL:${MSVC}>:/permissive->")
 
-target_include_directories(libsodium
+target_include_directories(${PROJECT_NAME}
         PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/libsodium/include>
         $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>
