@@ -54,6 +54,6 @@ packageProject(
         VERSION ${PROJECT_VERSION}
         BINARY_DIR ${PROJECT_BINARY_DIR}
         INCLUDE_DIR ${PROJECT_SOURCE_DIR}/src/libsodium/include
-        INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
+        INCLUDE_DESTINATION include
         DEPENDENCIES ""
 )
