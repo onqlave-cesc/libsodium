@@ -34,7 +34,7 @@ FILE(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/lib
 
 
 # ---- Create library ----
-add_library(libsodium SHARED ${headers} ${sources})
+add_library(libsodium SHARED ${headers})
 set_target_properties(libsodium PROPERTIES LINKER_LANGUAGE CXX)
 
 # being a cross-platform target, we enforce standards conformance on MSVC
